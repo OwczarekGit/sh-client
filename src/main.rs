@@ -3,13 +3,9 @@ use std::time::Duration;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
-use std::net;
-use std::env;
-use std::env::args;
-use std::io::{BufWriter, Write};
-use std::mem::transmute;
+use std::io::Write;
 use std::net::TcpStream;
-use sdl2::mouse::{MouseButton, MouseState};
+use sdl2::mouse::MouseButton;
 use clap::Parser;
 
 struct RemoteEventClient{
@@ -32,7 +28,7 @@ impl RemoteEventClient {
     fn send_data(&mut self, protocol: &str, msg: &str){
         match &self.client.as_ref() {
             Some(mut c) => {
-                let mut data = format!("{}|{}", protocol, msg);
+                let data = format!("{}|{}", protocol, msg);
                 c.write_all(format!("{}\n", data).as_bytes()).unwrap();
             },
             None => {
@@ -182,9 +178,9 @@ fn main() {
             }
 
             connection.send_data("MOUSE", format!("{};{};{}", dx as f32, -dy as f32, mouse_state.to_string().as_str()).as_str() );
-
-            thread::sleep(Duration::from_millis(poll_rate));
         }
+
+        thread::sleep(Duration::from_millis(poll_rate));
     }
 }
 
