@@ -58,7 +58,7 @@ struct Args{
     rate: u64,
 
     /// Should mouse events be handled.
-    #[clap(short = 'm', long = "mouse", default_value = "true")]
+    #[clap(short = 'm', long = "mouse", takes_value = false)]
     mouse: bool,
 
 }
@@ -101,6 +101,7 @@ fn main() {
     update_title(canvas.window_mut(), &server_ip, poll_rate as f32);
 
     'running: loop {
+        let mut should_send_data = false;
         for event in events.poll_iter() {
             match event {
                 Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Q), .. } => break 'running,
@@ -108,54 +109,57 @@ fn main() {
                 // Z
                 Event::KeyDown { keycode: Some(Keycode::Z), repeat: false, .. } => {
                     key_state |= 0b0000_0001;
-                    connection.send_data("OSU", key_state.to_string().as_str());
+                    should_send_data = true;
                 },
                 Event::KeyUp   { keycode: Some(Keycode::Z), repeat: false, .. } => {
                     key_state &= 0b1111_1110;
-                    connection.send_data("OSU", key_state.to_string().as_str());
+                    should_send_data = true;
                 },
 
                 // X
                 Event::KeyDown { keycode: Some(Keycode::X), repeat: false, .. } => {
                     key_state |= 0b0000_0010;
-                    connection.send_data("OSU", key_state.to_string().as_str());
+                    should_send_data = true;
                 },
                 Event::KeyUp   { keycode: Some(Keycode::X), repeat: false, .. } => {
                     key_state &= 0b1111_1101;
-                    connection.send_data("OSU", key_state.to_string().as_str());
+                    should_send_data = true;
                 },
 
                 // Space
                 Event::KeyDown { keycode: Some(Keycode::Space), repeat: false, .. } => {
                     key_state |= 0b0000_0100;
-                    connection.send_data("OSU", key_state.to_string().as_str());
+                    should_send_data = true;
                 },
                 Event::KeyUp   { keycode: Some(Keycode::Space), repeat: false, .. } => {
                     key_state &= 0b1111_1011;
-                    connection.send_data("OSU", key_state.to_string().as_str());
+                    should_send_data = true;
                 },
 
                 // F2
                 Event::KeyDown { keycode: Some(Keycode::F2), repeat: false, .. } => {
                     key_state |= 0b0000_1000;
-                    connection.send_data("OSU", key_state.to_string().as_str());
+                    should_send_data = true;
                 },
                 Event::KeyUp   { keycode: Some(Keycode::F2), repeat: false, .. } => {
                     key_state &= 0b1111_0111;
-                    connection.send_data("OSU", key_state.to_string().as_str());
+                    should_send_data = true;
                 },
 
                 // ESC
                 Event::KeyDown { keycode: Some(Keycode::Escape), repeat: false, .. } => {
                     key_state |= 0b0001_0000;
-                    connection.send_data("OSU", key_state.to_string().as_str());
+                    should_send_data = true;
                 },
                 Event::KeyUp   { keycode: Some(Keycode::Escape), repeat: false, .. } => {
                     key_state &= 0b1110_1111;
-                    connection.send_data("OSU", key_state.to_string().as_str());
+                    should_send_data = true;
                 },
                 _ => {}
             }
+        }
+        if should_send_data {
+            connection.send_data("OSU", key_state.to_string().as_str());
         }
 
         // MOUSE
