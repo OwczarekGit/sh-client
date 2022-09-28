@@ -64,7 +64,8 @@ struct Args{
 }
 
 fn main() {
-    let mut key_state = 0x00;
+    let mut key_state_osu = 0x00;
+    let mut key_state_keyboard = 0x00u128;
     let mut mouse_state = 0x00;
 
     let args = Args::parse();
@@ -75,7 +76,6 @@ fn main() {
     let mouse_enabled = args.mouse;
 
     let mut connection = RemoteEventClient::new(server_ip.clone(), port);
-
 
     let context = sdl2::init().unwrap();
     let video = context.video().unwrap();
@@ -101,65 +101,100 @@ fn main() {
     update_title(canvas.window_mut(), &server_ip, poll_rate as f32);
 
     'running: loop {
-        let mut should_send_data = false;
+        let mut should_send_osu_data = false;
+        let mut should_send_keyboard_data = false;
         for event in events.poll_iter() {
             match event {
                 Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Q), .. } => break 'running,
 
                 // Z
                 Event::KeyDown { keycode: Some(Keycode::Z), repeat: false, .. } => {
-                    key_state |= 0b0000_0001;
-                    should_send_data = true;
+                    key_state_osu |= 0b0000_0001;
+                    should_send_osu_data = true;
                 },
                 Event::KeyUp   { keycode: Some(Keycode::Z), repeat: false, .. } => {
-                    key_state &= 0b1111_1110;
-                    should_send_data = true;
+                    key_state_osu &= 0b1111_1110;
+                    should_send_osu_data = true;
                 },
 
                 // X
                 Event::KeyDown { keycode: Some(Keycode::X), repeat: false, .. } => {
-                    key_state |= 0b0000_0010;
-                    should_send_data = true;
+                    key_state_osu |= 0b0000_0010;
+                    should_send_osu_data = true;
                 },
                 Event::KeyUp   { keycode: Some(Keycode::X), repeat: false, .. } => {
-                    key_state &= 0b1111_1101;
-                    should_send_data = true;
+                    key_state_osu &= 0b1111_1101;
+                    should_send_osu_data = true;
                 },
 
                 // Space
                 Event::KeyDown { keycode: Some(Keycode::Space), repeat: false, .. } => {
-                    key_state |= 0b0000_0100;
-                    should_send_data = true;
+                    key_state_keyboard |= 1 << 39;
+                    should_send_keyboard_data = true;
                 },
                 Event::KeyUp   { keycode: Some(Keycode::Space), repeat: false, .. } => {
-                    key_state &= 0b1111_1011;
-                    should_send_data = true;
+                    key_state_keyboard = key_state_keyboard & !(1 << 39);
+                    should_send_keyboard_data = true;
+                },
+
+                // F1
+                Event::KeyDown { keycode: Some(Keycode::F1), repeat: false, .. } => {
+                    key_state_keyboard |= 1 << 44;
+                    should_send_keyboard_data = true;
+                },
+                Event::KeyUp   { keycode: Some(Keycode::F1), repeat: false, .. } => {
+                    key_state_keyboard = key_state_keyboard & !(1 << 44);
+                    should_send_keyboard_data = true;
                 },
 
                 // F2
                 Event::KeyDown { keycode: Some(Keycode::F2), repeat: false, .. } => {
-                    key_state |= 0b0000_1000;
-                    should_send_data = true;
+                    key_state_keyboard |= 1 << 45;
+                    should_send_keyboard_data = true;
                 },
                 Event::KeyUp   { keycode: Some(Keycode::F2), repeat: false, .. } => {
-                    key_state &= 0b1111_0111;
-                    should_send_data = true;
+                    key_state_keyboard = key_state_keyboard & !(1 << 45);
+                    should_send_keyboard_data = true;
+                },
+
+                // Return
+                Event::KeyDown { keycode: Some(Keycode::Return), repeat: false, .. } => {
+                    key_state_keyboard |= 1 << 40;
+                    should_send_keyboard_data = true;
+                },
+                Event::KeyUp   { keycode: Some(Keycode::Return), repeat: false, .. } => {
+                    key_state_keyboard = key_state_keyboard & !(1 << 40);
+                    should_send_keyboard_data = true;
+                },
+
+                // TILDE
+                Event::KeyDown { keycode: Some(Keycode::Backquote), repeat: false, .. } => {
+                    key_state_keyboard |= 1 << 38;
+                    should_send_keyboard_data = true;
+                },
+                Event::KeyUp   { keycode: Some(Keycode::Backquote), repeat: false, .. } => {
+                    key_state_keyboard = key_state_keyboard & !(1 << 38);
+                    should_send_keyboard_data = true;
                 },
 
                 // ESC
                 Event::KeyDown { keycode: Some(Keycode::Escape), repeat: false, .. } => {
-                    key_state |= 0b0001_0000;
-                    should_send_data = true;
+                    key_state_keyboard |= 1 << 37;
+                    should_send_keyboard_data = true;
                 },
                 Event::KeyUp   { keycode: Some(Keycode::Escape), repeat: false, .. } => {
-                    key_state &= 0b1110_1111;
-                    should_send_data = true;
+                    key_state_keyboard = key_state_keyboard & !(1 << 37);
+                    should_send_keyboard_data = true;
                 },
                 _ => {}
             }
         }
-        if should_send_data {
-            connection.send_data("OSU", key_state.to_string().as_str());
+        if should_send_osu_data {
+            connection.send_data("OSU", key_state_osu.to_string().as_str());
+        }
+
+        if should_send_keyboard_data {
+            connection.send_data("KEYBOARD", key_state_keyboard.to_string().as_str());
         }
 
         // MOUSE
