@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;
 use sdl2::event::Event;
@@ -106,6 +107,73 @@ fn main() {
     canvas.present();
     update_title(canvas.window_mut(), &server_ip, poll_rate as f32);
 
+    let mut keymap = HashMap::new();
+
+    keymap.insert("0", 0);
+    keymap.insert("1", 1);
+    keymap.insert("2", 2);
+    keymap.insert("3", 3);
+    keymap.insert("4", 4);
+    keymap.insert("5", 5);
+    keymap.insert("6", 6);
+    keymap.insert("7", 7);
+    keymap.insert("8", 8);
+    keymap.insert("9", 9);
+
+    keymap.insert("A", 10);
+    keymap.insert("B", 11);
+    keymap.insert("C", 12);
+    keymap.insert("D", 13);
+    keymap.insert("E", 14);
+    keymap.insert("F", 15);
+    keymap.insert("G", 16);
+    keymap.insert("H", 17);
+    keymap.insert("I", 18);
+    keymap.insert("J", 19);
+    keymap.insert("K", 20);
+    keymap.insert("L", 21);
+    keymap.insert("M", 22);
+    keymap.insert("N", 23);
+    keymap.insert("O", 24);
+    keymap.insert("P", 25);
+    keymap.insert("Q", 26);
+    keymap.insert("R", 27);
+    keymap.insert("S", 28);
+    keymap.insert("T", 29);
+    keymap.insert("U", 30);
+    keymap.insert("V", 31);
+    keymap.insert("W", 32);
+    keymap.insert("X", 33);
+    keymap.insert("Y", 34);
+    keymap.insert("Z", 35);
+
+    keymap.insert( "F1", 36);
+    keymap.insert( "F2", 37);
+    keymap.insert( "F3", 38);
+    keymap.insert( "F4", 39);
+    keymap.insert( "F5", 40);
+    keymap.insert( "F6", 41);
+    keymap.insert( "F7", 42);
+    keymap.insert( "F8", 43);
+    keymap.insert( "F9", 44);
+    keymap.insert("F10", 45);
+    keymap.insert("F11", 46);
+    keymap.insert("F12", 47);
+
+    keymap.insert("Escape", 48);
+    keymap.insert("`", 49);
+    keymap.insert("Space", 50);
+    keymap.insert("Return", 51);
+
+    keymap.insert("Left Alt", 53);
+    keymap.insert("Left Ctrl", 55);
+    keymap.insert("Left Shift", 56);
+    keymap.insert("Backspace", 57);
+    keymap.insert("Tab", 58);
+    keymap.insert("CapsLock", 59);
+
+
+
     'running: loop {
 
         let mut should_send_osu_data = false;
@@ -115,9 +183,9 @@ fn main() {
 
         for event in events.poll_iter() {
             match event {
-                Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Q), .. } => break 'running,
+                Event::Quit {..} => break 'running,
 
-                // Z
+                // osu! Z key.
                 Event::KeyDown { keycode: Some(Keycode::Z), repeat: false, .. } => {
                     key_state_osu |= 0b0000_0001;
                     should_send_osu_data = true;
@@ -127,7 +195,7 @@ fn main() {
                     should_send_osu_data = true;
                 },
 
-                // X
+                // osu! X key
                 Event::KeyDown { keycode: Some(Keycode::X), repeat: false, .. } => {
                     key_state_osu |= 0b0000_0010;
                     should_send_osu_data = true;
@@ -137,63 +205,24 @@ fn main() {
                     should_send_osu_data = true;
                 },
 
-                // Space
-                Event::KeyDown { keycode: Some(Keycode::Space), repeat: false, .. } => {
-                    key_state_keyboard |= 1 << 39;
-                    should_send_keyboard_data = true;
-                },
-                Event::KeyUp   { keycode: Some(Keycode::Space), repeat: false, .. } => {
-                    key_state_keyboard = key_state_keyboard & !(1 << 39);
-                    should_send_keyboard_data = true;
-                },
-
-                // F1
-                Event::KeyDown { keycode: Some(Keycode::F1), repeat: false, .. } => {
-                    key_state_keyboard |= 1 << 44;
-                    should_send_keyboard_data = true;
-                },
-                Event::KeyUp   { keycode: Some(Keycode::F1), repeat: false, .. } => {
-                    key_state_keyboard = key_state_keyboard & !(1 << 44);
+                // Keyboard down
+                Event::KeyDown {keycode, repeat: false, ..} =>{
+                    if let Some(k) = keycode {
+                        if let Some(bit) = keymap.get(k.name().as_str()) {
+                            key_state_keyboard |= 1 << bit;
+                        };
+                        // println!("{}", k.name().as_str());
+                    }
                     should_send_keyboard_data = true;
                 },
 
-                // F2
-                Event::KeyDown { keycode: Some(Keycode::F2), repeat: false, .. } => {
-                    key_state_keyboard |= 1 << 45;
-                    should_send_keyboard_data = true;
-                },
-                Event::KeyUp   { keycode: Some(Keycode::F2), repeat: false, .. } => {
-                    key_state_keyboard = key_state_keyboard & !(1 << 45);
-                    should_send_keyboard_data = true;
-                },
-
-                // Return
-                Event::KeyDown { keycode: Some(Keycode::Return), repeat: false, .. } => {
-                    key_state_keyboard |= 1 << 40;
-                    should_send_keyboard_data = true;
-                },
-                Event::KeyUp   { keycode: Some(Keycode::Return), repeat: false, .. } => {
-                    key_state_keyboard = key_state_keyboard & !(1 << 40);
-                    should_send_keyboard_data = true;
-                },
-
-                // TILDE
-                Event::KeyDown { keycode: Some(Keycode::Backquote), repeat: false, .. } => {
-                    key_state_keyboard |= 1 << 38;
-                    should_send_keyboard_data = true;
-                },
-                Event::KeyUp   { keycode: Some(Keycode::Backquote), repeat: false, .. } => {
-                    key_state_keyboard = key_state_keyboard & !(1 << 38);
-                    should_send_keyboard_data = true;
-                },
-
-                // ESC
-                Event::KeyDown { keycode: Some(Keycode::Escape), repeat: false, .. } => {
-                    key_state_keyboard |= 1 << 37;
-                    should_send_keyboard_data = true;
-                },
-                Event::KeyUp   { keycode: Some(Keycode::Escape), repeat: false, .. } => {
-                    key_state_keyboard = key_state_keyboard & !(1 << 37);
+                // Keyboard up
+                Event::KeyUp {keycode, repeat: false, ..} =>{
+                    if let Some(k) = keycode {
+                        if let Some(bit) = keymap.get(k.name().as_str()) {
+                            key_state_keyboard = key_state_keyboard & !(1 << bit);
+                        };
+                    }
                     should_send_keyboard_data = true;
                 },
 
@@ -202,10 +231,12 @@ fn main() {
                     delta_mouse_wheel = y;
                     should_send_mouse_data = true;
                 },
+
                 Event::MouseMotion {..} | Event::MouseButtonDown {..} | Event::MouseButtonUp {..} => should_send_mouse_data = true,
                 _ => {}
             }
         }
+
         if should_send_osu_data {
             connection.send_data("OSU", key_state_osu.to_string().as_str());
         }
@@ -219,8 +250,6 @@ fn main() {
             let state = events.relative_mouse_state();
             let dx = state.x() as f32 * mouse_speed;
             let dy = state.y() as f32 * mouse_speed;
-
-
 
             if state.is_mouse_button_pressed(MouseButton::Left){
                 mouse_state |= 0b0000_0001;
