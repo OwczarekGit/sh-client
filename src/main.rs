@@ -101,8 +101,12 @@ fn main() {
     update_title(canvas.window_mut(), &server_ip, poll_rate as f32);
 
     'running: loop {
+
         let mut should_send_osu_data = false;
+        let mut should_send_mouse_data = false;
         let mut should_send_keyboard_data = false;
+        let mut delta_mouse_wheel = 0;
+
         for event in events.poll_iter() {
             match event {
                 Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Q), .. } => break 'running,
@@ -186,6 +190,13 @@ fn main() {
                     key_state_keyboard = key_state_keyboard & !(1 << 37);
                     should_send_keyboard_data = true;
                 },
+
+                // Mouse
+                Event::MouseWheel { y, ..} => {
+                    delta_mouse_wheel = y;
+                    should_send_mouse_data = true;
+                },
+                Event::MouseMotion {..} | Event::MouseButtonDown {..} | Event::MouseButtonUp {..} => should_send_mouse_data = true,
                 _ => {}
             }
         }
@@ -198,10 +209,11 @@ fn main() {
         }
 
         // MOUSE
-        if mouse_enabled {
+        if mouse_enabled && should_send_mouse_data {
             let state = events.relative_mouse_state();
             let dx = state.x() as f32 * mouse_speed;
             let dy = state.y() as f32 * mouse_speed;
+
 
 
             if state.is_mouse_button_pressed(MouseButton::Left){
@@ -216,7 +228,14 @@ fn main() {
                 mouse_state &= 0b1111_1101;
             }
 
-            connection.send_data("MOUSE", format!("{};{};{}", dx as f32, -dy as f32, mouse_state.to_string().as_str()).as_str() );
+            let payload = format!("{};{};{};{}",
+                                   dx as f32,
+                                   -dy as f32,
+                                   delta_mouse_wheel.to_string(),
+                                   mouse_state.to_string()
+            );
+
+            connection.send_data("MOUSE",  payload.as_str());
         }
 
         thread::sleep(Duration::from_millis(poll_rate));
