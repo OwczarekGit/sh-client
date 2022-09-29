@@ -39,26 +39,26 @@ impl RemoteEventClient {
 }
 
 #[derive(Parser, Debug)]
-#[clap(author, version, about = "A simple client implementation for SensorHandler.\nhttps://github.com/OwczarekGit/sensorhandler", long_about = None)]
+#[command(author, version, about = "A simple client implementation for SensorHandler.\nhttps://github.com/OwczarekGit/sensorhandler", long_about = None)]
 // #[clap(author, version, about)]
 struct Args{
     /// Server ip address.
     address: String,
 
     /// The server port.
-    #[clap(short = 'p', long = "port", default_value = "2137")]
+    #[arg(short = 'p', long = "port", default_value_t = String::from("2137") )]
     port: String,
 
     /// Mouse speed.
-    #[clap(short = 's', long = "speed", default_value = "0.06")]
+    #[arg(short = 's', long = "speed", default_value_t = 0.06 )]
     speed: f32,
 
     /// The event polling rate in ms.
-    #[clap(short = 'r', long = "rate", default_value = "1")]
+    #[arg(short = 'r', long = "rate", default_value_t = 1 )]
     rate: u64,
 
-    /// Should mouse events be handled.
-    #[clap(short = 'm', long = "mouse", takes_value = false)]
+    /// Disable mouse event handling.
+    #[arg(short = 'm', long = "mouse")]
     mouse: bool,
 
 }
@@ -68,12 +68,16 @@ fn main() {
     let mut key_state_keyboard = 0x00u128;
     let mut mouse_state = 0x00;
 
-    let args = Args::parse();
+    let args: Args = Args::parse();
+
+    // println!("{:?}",args);
+
     let mouse_speed = args.speed;
     let server_ip = args.address;
     let port = args.port;
     let poll_rate = args.rate;
-    let mouse_enabled = args.mouse;
+    let mouse_enabled = !args.mouse;
+
 
     let mut connection = RemoteEventClient::new(server_ip.clone(), port);
 
@@ -90,8 +94,10 @@ fn main() {
         .build()
         .unwrap();
 
-    context.mouse().set_relative_mouse_mode(true);
-    context.mouse().show_cursor(true);
+    if mouse_enabled {
+        context.mouse().set_relative_mouse_mode(true);
+        context.mouse().show_cursor(true);
+    }
 
     let mut events = context.event_pump().unwrap();
 
