@@ -65,9 +65,9 @@ struct Args{
 }
 
 fn main() {
-    let mut key_state_osu = 0x00;
-    let mut key_state_keyboard = 0x00u128;
-    let mut mouse_state = 0x00;
+    let mut key_state_osu = 0u8;
+    let mut key_state_keyboard = 0u128;
+    let mut mouse_state = 0u32;
 
     let args: Args = Args::parse();
 
