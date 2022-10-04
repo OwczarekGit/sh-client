@@ -172,7 +172,36 @@ fn main() {
     keymap.insert("Tab", 58);
     keymap.insert("CapsLock", 59);
 
+    keymap.insert("Up", 60);
+    keymap.insert("Down", 61);
+    keymap.insert("Left", 62);
+    keymap.insert("Right", 63);
 
+    keymap.insert("Right Alt", 64);
+    keymap.insert("Right Ctrl", 65);
+    keymap.insert("Right Shift", 66);
+
+    keymap.insert("-", 67);
+    keymap.insert("=", 68);
+    keymap.insert("[", 69);
+    keymap.insert("]", 70);
+    keymap.insert(";", 71);
+    keymap.insert("'", 72);
+    keymap.insert("\\", 73);
+    keymap.insert(",", 74);
+    keymap.insert(".", 75);
+    keymap.insert("/", 76);
+
+    keymap.insert("Insert", 77);
+    keymap.insert("Delete", 78);
+    keymap.insert("Home", 79);
+    keymap.insert("End", 80);
+    keymap.insert("PageUp", 81);
+    keymap.insert("PageDown", 82);
+
+    // keymap.insert("Print", 83);
+    keymap.insert("ScrollLock", 84);
+    keymap.insert("Pause", 85);
 
     'running: loop {
 
